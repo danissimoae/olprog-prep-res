@@ -495,3 +495,30 @@ small[data-count] { margin-left: auto; color: var(--dim); font-weight: 400; font
 @media (prefers-reduced-motion: reduce) {
     .flame *, .streak.pop .flame { animation: none !important; }
 }
+
+/* ===== Молнии вокруг плашки ===== */
+.streak {
+    --zx: 80px;
+    --zy: 80px;
+    position: relative;
+    transition: background 0.15s, border-color 0.15s;
+}
+#zap {
+    position: absolute;
+    left: calc(var(--zx) * -1);
+    top: calc(var(--zy) * -1);
+    width: calc(100% + var(--zx) * 2);
+    height: calc(100% + var(--zy) * 2);
+    pointer-events: none;
+    z-index: 5;
+}
+/* На время вспышки плашка темнеет: так молнии контрастнее */
+.streak.zap { background: #14141c; border-color: #facc15; }
+.streak.zap .streak-text b { color: #fff; }
+.streak.zap .streak-text span { color: #cbd5e1; }
+@media (max-width: 860px) {
+    .streak { --zx: 14px; }   /* на телефоне не выходим за край экрана */
+}
+@media (prefers-reduced-motion: reduce) {
+    #zap { display: none; }
+}

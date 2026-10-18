@@ -23,6 +23,7 @@ const state = {
     progress: {},          // id -> { solved: bool, code: { язык: текст } }
     current: null,         // открытая задача
     language: localStorage.getItem(LANGUAGE_KEY) || 'cpp',
+    todayCount: 0,         // решено сегодня на прошлом обновлении
     flameLevel: 0,         // предыдущий уровень огонька: нужен для вспышки
     sentToCses: false,     // нажали «Отправить», ждём возвращения на вкладку
 };
@@ -144,6 +145,7 @@ async function importProgress(file) {
         if (typeof data !== 'object' || data === null || Array.isArray(data)) throw new Error('format');
         if (!confirm('Заменить текущий прогресс и решения данными из файла?')) return;
         state.progress = data;
+        state.todayCount = solvedToday();                  // импорт не должен вызывать молнии
         saveProgress();
         refreshProgress();
         showToast('Прогресс загружен');
@@ -173,9 +175,146 @@ function updateStreak() {
     }
     state.flameLevel = level;
 
+    if (count > state.todayCount) zap(level);             // решили новую задачу: молнии
+    state.todayCount = count;
+
     streak.dataset.level = level;
     streak.title = `Огонь: уровень ${level} из 5`;
     $('#streak-count').textContent = `Решено сегодня: ${count}`;
+}
+
+/* ---- Молнии: вспышка при каждой новой решённой задаче ---- */
+
+// Чем выше уровень огня, тем больше молний, ветвей и свечения.
+const BOLT_LEVELS = [
+    { bolts: 1, branch: 0.08, width: 1.2, duration: 700 },
+    { bolts: 2, branch: 0.12, width: 1.4, duration: 800 },
+    { bolts: 3, branch: 0.18, width: 1.7, duration: 900 },
+    { bolts: 4, branch: 0.25, width: 2.0, duration: 1000 },
+    { bolts: 6, branch: 0.32, width: 2.4, duration: 1200 },
+];
+
+const rand = (min, max) => min + Math.random() * (max - min);
+
+// Рваная линия: делим отрезок пополам, сдвигаем середину случайно и повторяем для половин.
+function jaggedLine(a, b, spread, depth) {
+    if (depth === 0) return [a, b];
+    const mid = {
+        x: (a.x + b.x) / 2 + rand(-spread, spread),
+        y: (a.y + b.y) / 2 + rand(-spread, spread),
+    };
+    const left = jaggedLine(a, mid, spread / 1.9, depth - 1);
+    const right = jaggedLine(mid, b, spread / 1.9, depth - 1);
+    return left.concat(right.slice(1));
+}
+
+// Молния = главная линия + тонкие ветки, которые отходят от случайных точек.
+function createBolt(start, end, params, width, isBranch = false) {
+    const length = Math.hypot(end.x - start.x, end.y - start.y);
+    const points = jaggedLine(start, end, length * 0.16, isBranch ? 4 : 6);
+    const parts = [{ points, width }];
+    if (isBranch) return parts;
+
+    const direction = Math.atan2(end.y - start.y, end.x - start.x);
+    points.forEach((point, i) => {
+        if (i % 4 !== 0 || i > points.length - 8 || Math.random() > params.branch) return;
+        const angle = direction + rand(-1, 1);
+        const size = length * rand(0.12, 0.3);
+        const tip = { x: point.x + Math.cos(angle) * size, y: point.y + Math.sin(angle) * size };
+        parts.push(...createBolt(point, tip, params, width * 0.55, true));
+    });
+    return parts;
+}
+
+// Начало всегда на верхнем краю. На высоких уровнях часть молний бьёт из верхних углов,
+// и они охватывают плашку с боков. Конец: внутри плашки.
+function pickStart(box, size, level) {
+    if (level >= 3 && Math.random() < 0.4) {
+        const fromLeft = Math.random() < 0.5;
+        return { x: fromLeft ? rand(0, size.w * 0.15) : rand(size.w * 0.85, size.w), y: 0 };
+    }
+    return { x: rand(size.w * 0.15, size.w * 0.85), y: 0 };
+}
+
+function pickEnd(box) {
+    return {
+        x: rand(box.left + 12, box.right - 12),
+        y: rand(box.top + (box.bottom - box.top) * 0.35, box.bottom - 6),
+    };
+}
+
+// Три прохода одной линии: широкое мягкое свечение, жёлтое тело, светлая сердцевина.
+function drawBolt(ctx, parts, shown, alpha, level) {
+    ctx.shadowColor = 'rgba(250, 204, 21, 0.9)';
+    ctx.shadowBlur = 6 + level * 3;
+    const passes = [
+        [5, `rgba(245, 158, 11, ${0.18 * alpha})`],
+        [2.4, `rgba(250, 204, 21, ${0.55 * alpha})`],
+        [1, `rgba(255, 251, 224, ${alpha})`],
+    ];
+    for (const { points, width } of parts) {
+        const visible = points.slice(0, Math.max(2, Math.floor(points.length * shown)));
+        ctx.beginPath();
+        visible.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
+        for (const [factor, color] of passes) {
+            ctx.lineWidth = width * factor;
+            ctx.strokeStyle = color;
+            ctx.stroke();
+        }
+    }
+}
+
+// ---- конец чистых функций (ниже работа с DOM) ----
+
+let zapToken = 0;
+
+function zap(level) {
+    const canvas = $('#zap');
+    const streak = $('#streak');
+    if (!canvas.getContext || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const params = BOLT_LEVELS[level - 1];
+    const token = ++zapToken;                              // новая вспышка отменяет прежнюю
+
+    // Холст больше плашки на --zx и --zy с каждой стороны: молнии выходят за её края.
+    const css = getComputedStyle(streak);
+    const pad = { x: parseFloat(css.getPropertyValue('--zx')), y: parseFloat(css.getPropertyValue('--zy')) };
+    const size = { w: canvas.clientWidth, h: canvas.clientHeight };
+    const box = { left: pad.x, right: size.w - pad.x, top: pad.y, bottom: size.h - pad.y };
+
+    const ratio = window.devicePixelRatio || 1;
+    canvas.width = size.w * ratio;
+    canvas.height = size.h * ratio;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(ratio, ratio);
+    ctx.lineCap = ctx.lineJoin = 'round';
+
+    const bolts = Array.from({ length: params.bolts }, (_, i) => ({
+        parts: createBolt(pickStart(box, size, level), pickEnd(box), params, params.width),
+        delay: i * 90,                                       // молнии бьют по очереди
+    }));
+
+    streak.classList.add('zap');
+    const startedAt = performance.now();
+
+    function frame(now) {
+        if (token !== zapToken) return;
+        const elapsed = now - startedAt;
+        ctx.clearRect(0, 0, size.w, size.h);
+        if (elapsed >= params.duration) {
+            streak.classList.remove('zap');
+            return;
+        }
+        const fade = 1 - Math.max(0, (elapsed / params.duration - 0.5) / 0.5); // вторая половина: затухание
+        for (const bolt of bolts) {
+            const age = elapsed - bolt.delay;
+            if (age < 0) continue;
+            const flicker = Math.random() < 0.25 ? rand(0.3, 0.7) : 1;           // мигание
+            drawBolt(ctx, bolt.parts, Math.min(1, age / 140), fade * flicker, level);
+        }
+        requestAnimationFrame(frame);
+    }
+    frame(startedAt);
 }
 
 /* Обновляет отметки «решено», счётчики и полоски во всех списках сразу. */
@@ -527,6 +666,7 @@ async function init() {
     renderSidebar();
     bindEvents();
     state.flameLevel = FLAME_THRESHOLDS.filter((n) => solvedToday() >= n).length; // без вспышки при загрузке
+    state.todayCount = solvedToday();
     route();
 
     if ('serviceWorker' in navigator && location.protocol !== 'file:') {
