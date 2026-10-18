@@ -24,4 +24,4 @@ python -m http.server   # открыть http://localhost:8000
 
 1. Создать `problems/<тема>/<id>.md` с front matter (`id`, `title`, `titleRu`, `order`) и текстом в Markdown.
 2. `node tools/build-index.mjs`
-3. Новая тема: добавить её в `problems/topics.json` и создать папку.
+3. Новая тема: добавить её в `olprog-practice` и создать папку.
