@@ -1,0 +1,124 @@
+[
+    {
+        "id": "introductory",
+        "title": "Вводные задачи",
+        "problems": [
+            {
+                "id": "1068",
+                "title": "Weird Algorithm",
+                "titleRu": "Странный алгоритм"
+            },
+            {
+                "id": "1083",
+                "title": "Missing Number",
+                "titleRu": "Пропущенное число"
+            },
+            {
+                "id": "1069",
+                "title": "Repetitions",
+                "titleRu": "Повторения"
+            }
+        ]
+    },
+    {
+        "id": "sorting",
+        "title": "Сортировка и поиск",
+        "problems": [
+            {
+                "id": "1621",
+                "title": "Distinct Numbers",
+                "titleRu": "Различные числа"
+            },
+            {
+                "id": "1084",
+                "title": "Apartments",
+                "titleRu": "Квартиры"
+            },
+            {
+                "id": "1090",
+                "title": "Ferris Wheel",
+                "titleRu": "Колесо обозрения"
+            },
+            {
+                "id": "1091",
+                "title": "Concert Tickets",
+                "titleRu": "Билеты на концерт"
+            },
+            {
+                "id": "1619",
+                "title": "Restaurant Customers",
+                "titleRu": "Клиенты ресторана"
+            },
+            {
+                "id": "1629",
+                "title": "Movie Festival",
+                "titleRu": "Кинофестиваль"
+            },
+            {
+                "id": "1640",
+                "title": "Sum of Two Values",
+                "titleRu": "Сумма двух значений"
+            },
+            {
+                "id": "1643",
+                "title": "Maximum Subarray Sum",
+                "titleRu": "Максимальная сумма подмассива"
+            },
+            {
+                "id": "1074",
+                "title": "Stick Lengths",
+                "titleRu": "Длины палочек"
+            },
+            {
+                "id": "2183",
+                "title": "Missing Coin Sum",
+                "titleRu": "Пропущенная сумма монет"
+            },
+            {
+                "id": "2216",
+                "title": "Collecting Numbers",
+                "titleRu": "Сбор чисел"
+            },
+            {
+                "id": "1141",
+                "title": "Playlist",
+                "titleRu": "Плейлист"
+            },
+            {
+                "id": "1630",
+                "title": "Tasks and Deadlines",
+                "titleRu": "Задачи и дедлайны"
+            },
+            {
+                "id": "1631",
+                "title": "Reading Books",
+                "titleRu": "Чтение книг"
+            },
+            {
+                "id": "1641",
+                "title": "Sum of Three Values",
+                "titleRu": "Сумма трёх значений"
+            },
+            {
+                "id": "1642",
+                "title": "Sum of Four Values",
+                "titleRu": "Сумма четырёх значений"
+            },
+            {
+                "id": "1632",
+                "title": "Movie Festival II",
+                "titleRu": "Кинофестиваль II"
+            },
+            {
+                "id": "1661",
+                "title": "Subarray Sums I",
+                "titleRu": "Суммы подмассивов I"
+            },
+            {
+                "id": "1662",
+                "title": "Subarray Divisibility",
+                "titleRu": "Делимость подмассивов"
+            }
+        ]
+    }
+]

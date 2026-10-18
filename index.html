@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Задачи CSES на русском с редактором кода и быстрой отправкой на CSES">
+    <meta name="theme-color" content="#ffffff">
+    <title>OlProg Prep</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232563a8'/%3E%3Ctext x='16' y='22' font-size='16' font-family='monospace' font-weight='bold' text-anchor='middle' fill='white'%3E%7B%7D%3C/text%3E%3C/svg%3E">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script defer src="app.js"></script>
+</head>
+<body>
+<button id="menu" aria-label="Меню">☰</button>
+
+<nav id="side">
+    <a class="brand" href="#/">OlProg Prep</a>
+    <div id="nav"></div>
+</nav>
+
+<main>
+    <!-- Огонёк: сколько задач решено сегодня -->
+    <div id="streak" class="streak" data-level="0" aria-live="polite">
+        <svg class="flame" viewBox="0 0 24 32" aria-hidden="true">
+            <path class="f-out" d="M12 1C14 8 21 12 21 21a9 9 0 0 1-18 0C3 14 9 11 12 1z"/>
+            <path class="f-mid" d="M12 10C13.5 15 18 17 18 23a6 6 0 0 1-12 0C6 18 10 16 12 10z"/>
+            <path class="f-in" d="M12 17C13 20 15 21 15 24.5a3 3 0 0 1-6 0C9 21.5 11 20 12 17z"/>
+            <circle class="spark s1" cx="7" cy="8" r="1"/>
+            <circle class="spark s2" cx="17" cy="6" r="1"/>
+            <circle class="spark s3" cx="12" cy="3" r="0.8"/>
+        </svg>
+        <div class="streak-text">
+            <b id="streak-count"></b>
+            <span id="streak-phrase"></span>
+        </div>
+        <canvas id="zap" aria-hidden="true"></canvas>
+    </div>
+
+    <!-- Главная: список тем -->
+    <section id="home">
+        <h1>Задачи CSES на русском</h1>
+        <p class="lead">Читайте условие, пишите код здесь, отправляйте на CSES. <span id="stat"></span></p>
+        <input id="q" type="search" placeholder="Поиск по названию или номеру">
+        <div id="list"></div>
+        <p class="tools">
+            Прогресс хранится в этом браузере:
+            <button id="export">сохранить в файл</button> ·
+            <button id="import">загрузить из файла</button>
+            <input id="import-file" type="file" accept="application/json" hidden>
+        </p>
+    </section>
+
+    <!-- Страница задачи -->
+    <article id="prob" hidden>
+        <p class="crumb"><a href="#/">Задачи</a> / <span id="topic"></span></p>
+        <h1 id="ptitle"></h1>
+        <p class="meta">
+            <span id="pid"></span>
+            <a id="orig" target="_blank" rel="noopener">Оригинал на CSES</a>
+            <label><input type="checkbox" id="solved"> решено</label>
+        </p>
+
+        <div id="md" class="md"></div>
+
+        <h2>Решение</h2>
+        <div class="bar">
+            <select id="lang" aria-label="Язык">
+                <option value="cpp">C++17</option>
+                <option value="python">Python 3</option>
+                <option value="java">Java</option>
+                <option value="csharp">C#</option>
+            </select>
+            <button id="copy">Копировать</button>
+            <button id="dl">Скачать</button>
+            <button id="reset">Шаблон</button>
+            <a id="send" class="primary" target="_blank" rel="noopener">Отправить на CSES</a>
+        </div>
+        <div id="ed">
+            <pre id="hl" aria-hidden="true"><code></code></pre>
+            <textarea id="code" aria-label="Код решения" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"></textarea>
+        </div>
+        <p class="hint">«Отправить» копирует код и открывает форму CSES: выберите тот же язык, вставьте код и нажмите Submit.</p>
+
+        <nav class="pager"><a id="prev"></a><a id="next"></a></nav>
+    </article>
+
+    <footer>
+        Условия задач принадлежат <a href="https://cses.fi" target="_blank" rel="noopener">CSES Problem Set</a> (Antti Laaksonen).
+        Перевод сделан в образовательных целях, проект некоммерческий.
+    </footer>
+</main>
+
+<div id="toast" role="status"></div>
+</body>
+</html>
