@@ -432,3 +432,93 @@ small[data-count] { margin-left: auto; color: var(--dim); font-weight: 400; font
     * { transition: none !important; }
 }
 #nav details > summary { display: flex; align-items: baseline; gap: 0.3rem; }
+
+/* ===== Огонёк: сколько задач решено сегодня ===== */
+.streak {
+    --c1: #d1d5db; --c2: #e5e7eb; --c3: #f3f4f6; --scale: 0.8;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    max-width: 560px;
+    margin: 0 0 1.5rem;
+    padding: 0.4rem 0.9rem 0.4rem 0.6rem;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--soft);
+}
+.flame { flex: none; width: 1.6rem; height: 2.1rem; overflow: visible; transform: scale(var(--scale)); transform-origin: 50% 100%; }
+.flame .f-out { fill: var(--c1); }
+.flame .f-mid { fill: var(--c2); }
+.flame .f-in  { fill: var(--c3); }
+.flame path { transform-box: fill-box; transform-origin: 50% 100%; }
+.streak-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.35; }
+.streak-text b { font: 500 0.85rem "JetBrains Mono", monospace; }
+.streak-text span { color: var(--dim); font-size: 0.9rem; font-style: italic; }
+
+/* Уровни: цвет и размер растут, при 4 и 5 появляются искры и свечение */
+.streak[data-level="1"] { --c1: #fbbf24; --c2: #fde68a; --c3: #fffbeb; --scale: 0.8; }
+.streak[data-level="2"] { --c1: #f59e0b; --c2: #fbbf24; --c3: #fef3c7; --scale: 0.9; }
+.streak[data-level="3"] { --c1: #ea580c; --c2: #f59e0b; --c3: #fde68a; --scale: 1; }
+.streak[data-level="4"] { --c1: #dc2626; --c2: #f97316; --c3: #fbbf24; --scale: 1.1; }
+.streak[data-level="5"] { --c1: #dc2626; --c2: #f97316; --c3: #e0f2fe; --scale: 1.2; }
+.streak[data-level="4"] .flame { filter: drop-shadow(0 0 4px rgba(249, 115, 22, 0.5)); }
+.streak[data-level="5"] .flame { filter: drop-shadow(0 0 7px rgba(249, 115, 22, 0.75)); }
+
+/* Мерцание: три слоя с разным темпом выглядят живее одного */
+.streak:not([data-level="0"]) .f-out { animation: flicker 1.3s ease-in-out infinite; }
+.streak:not([data-level="0"]) .f-mid { animation: flicker 0.9s ease-in-out infinite reverse; }
+.streak:not([data-level="0"]) .f-in  { animation: flicker 0.6s ease-in-out infinite; }
+@keyframes flicker {
+    0%, 100% { transform: scaleY(1) skewX(0); }
+    30% { transform: scaleY(1.07) skewX(-3deg); }
+    60% { transform: scaleY(0.94) skewX(2deg); }
+}
+
+.spark { fill: var(--c2); opacity: 0; }
+.streak[data-level="4"] .spark, .streak[data-level="5"] .spark { animation: rise 1.8s ease-out infinite; }
+.spark.s2 { animation-delay: 0.6s !important; }
+.spark.s3 { animation-delay: 1.2s !important; }
+@keyframes rise {
+    0% { opacity: 0; transform: translateY(6px); }
+    25% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-9px); }
+}
+
+/* Вспышка при новом уровне */
+.streak.pop .flame { animation: pop 0.7s ease-out; }
+@keyframes pop {
+    0% { transform: scale(0.3); }
+    55% { transform: scale(calc(var(--scale) * 1.4)); }
+    100% { transform: scale(var(--scale)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .flame *, .streak.pop .flame { animation: none !important; }
+}
+
+/* ===== Молнии вокруг плашки ===== */
+.streak {
+    --zx: 80px;
+    --zy: 80px;
+    position: relative;
+    transition: background 0.15s, border-color 0.15s;
+}
+#zap {
+    position: absolute;
+    left: calc(var(--zx) * -1);
+    top: calc(var(--zy) * -1);
+    width: calc(100% + var(--zx) * 2);
+    height: calc(100% + var(--zy) * 2);
+    pointer-events: none;
+    z-index: 5;
+}
+/* На время вспышки плашка темнеет: так молнии контрастнее */
+.streak.zap { background: #14141c; border-color: #facc15; }
+.streak.zap .streak-text b { color: #fff; }
+.streak.zap .streak-text span { color: #cbd5e1; }
+@media (max-width: 860px) {
+    .streak { --zx: 14px; }   /* на телефоне не выходим за край экрана */
+}
+@media (prefers-reduced-motion: reduce) {
+    #zap { display: none; }
+}
