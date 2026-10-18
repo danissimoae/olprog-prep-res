@@ -23,6 +23,7 @@ const state = {
     progress: {},          // id -> { solved: bool, code: { язык: текст } }
     current: null,         // открытая задача
     language: localStorage.getItem(LANGUAGE_KEY) || 'cpp',
+    flameLevel: 0,         // предыдущий уровень огонька: нужен для вспышки
     sentToCses: false,     // нажали «Отправить», ждём возвращения на вкладку
 };
 
@@ -63,6 +64,28 @@ class Program {
 
 const FILE_EXTENSIONS = { cpp: 'cpp', python: 'py', java: 'java', csharp: 'cs' };
 
+// Огонёк: пороги «решено сегодня» для уровней 1..5 (уровень 0: огонь не горит).
+const FLAME_THRESHOLDS = [1, 2, 3, 5, 7];
+
+const PHRASES = [
+    'Движешься к прайму?',
+    'Не забывай про свою главную цель, продолжай.',
+    'Ещё одна задача: ещё один шаг.',
+    'Регулярность важнее вдохновения.',
+    'Каждый Wrong Answer приближает к Accepted.',
+    'Сложная задача — это просто задача, которую ты ещё не решил.',
+    'Сначала медленно, потом быстро.',
+    'Сегодняшний разбор — завтрашняя интуиция.',
+    'Не торопись: верный ответ лучше быстрого.',
+    'Проверь граничные случаи: n = 1, переполнение, пустой ввод.',
+    'Огонь держится на привычке.',
+    'Через месяц это будет казаться лёгким.',
+    'Баг сегодня — опыт завтра.',
+    'Хороший код пишется постепенно.',
+    'Один Accepted в день — и день прожит не зря.',
+    'Застрял? Нарисуй пример на бумаге.',
+];
+
 const escapeHtml = (text) =>
     String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -95,8 +118,13 @@ function saveProgress() {
 const entryFor = (id) => (state.progress[id] ??= {});
 const isSolved = (id) => Boolean(state.progress[id]?.solved);
 
+const todayKey = () => new Date().toLocaleDateString('sv'); // локальная дата, ГГГГ-ММ-ДД
+
 function setSolved(id, solved) {
-    entryFor(id).solved = solved;
+    const entry = entryFor(id);
+    if (solved && !entry.solved) entry.solvedAt = todayKey(); // считаем только новые решения
+    if (!solved) delete entry.solvedAt;
+    entry.solved = solved;
     saveProgress();
     refreshProgress();
 }
@@ -124,6 +152,32 @@ async function importProgress(file) {
     }
 }
 
+/* ---- Огонёк ---- */
+
+const solvedToday = () =>
+    Object.values(state.progress).filter((e) => e.solved && e.solvedAt === todayKey()).length;
+
+function pickPhrase() {
+    $('#streak-phrase').textContent = PHRASES[Math.floor(Math.random() * PHRASES.length)];
+}
+
+function updateStreak() {
+    const count = solvedToday();
+    const level = FLAME_THRESHOLDS.filter((limit) => count >= limit).length;
+    const streak = $('#streak');
+
+    if (level > state.flameLevel) {                       // уровень вырос: короткая вспышка
+        streak.classList.remove('pop');
+        void streak.offsetWidth;                            // перезапуск CSS-анимации
+        streak.classList.add('pop');
+    }
+    state.flameLevel = level;
+
+    streak.dataset.level = level;
+    streak.title = `Огонь: уровень ${level} из 5`;
+    $('#streak-count').textContent = `Решено сегодня: ${count}`;
+}
+
 /* Обновляет отметки «решено», счётчики и полоски во всех списках сразу. */
 function refreshProgress() {
     document.querySelectorAll('[data-id]').forEach((el) => {
@@ -144,6 +198,7 @@ function refreshProgress() {
     const total = state.order.length;
     const solvedTotal = state.order.filter(isSolved).length;
     $('#stat').textContent = `Решено ${solvedTotal} из ${total}.`;
+    updateStreak();
 }
 
 /* ============ 3. Каталог задач и списки ============ */
@@ -282,6 +337,7 @@ function route() {
     const problem = state.problems[id] || null;
 
     state.current = problem;
+    pickPhrase();
     $('#home').hidden = Boolean(problem);
     $('#prob').hidden = !problem;
     markActiveInSidebar(id);
@@ -470,6 +526,7 @@ async function init() {
 
     renderSidebar();
     bindEvents();
+    state.flameLevel = FLAME_THRESHOLDS.filter((n) => solvedToday() >= n).length; // без вспышки при загрузке
     route();
 
     if ('serviceWorker' in navigator && location.protocol !== 'file:') {
