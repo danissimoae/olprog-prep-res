@@ -1,0 +1,480 @@
+/* OlProg Prep: клиентское приложение. Сборки нет, всё на чистом JS.
+ *
+ * Разделы файла:
+ *   1. Константы и состояние
+ *   2. Прогресс (localStorage, экспорт и импорт)
+ *   3. Каталог задач и отрисовка списков
+ *   4. Страница задачи (условие, переключение между задачами)
+ *   5. Редактор: шаблоны, подсветка, сохранение кода
+ *   6. События и запуск
+ */
+
+/* ============ 1. Константы и состояние ============ */
+
+const STORAGE_KEY = 'olprog';
+const LANGUAGE_KEY = 'olprog-lang';
+
+const $ = (selector) => document.querySelector(selector);
+
+const state = {
+    topics: [],            // [{id, title, problems: [...]}] в порядке index.json
+    problems: {},          // id -> задача (+ topic, topicTitle)
+    order: [],             // id всех задач подряд: нужен для «Следующая»
+    progress: {},          // id -> { solved: bool, code: { язык: текст } }
+    current: null,         // открытая задача
+    language: localStorage.getItem(LANGUAGE_KEY) || 'cpp',
+    sentToCses: false,     // нажали «Отправить», ждём возвращения на вкладку
+};
+
+// Шаблоны, которые подставляются в пустой редактор.
+const TEMPLATES = {
+    cpp: `#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    return 0;
+}
+`,
+    python: `import sys
+input = sys.stdin.readline
+
+`,
+    java: `import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+
+    }
+}
+`,
+    csharp: `using System;
+
+class Program {
+    static void Main() {
+
+    }
+}
+`,
+};
+
+const FILE_EXTENSIONS = { cpp: 'cpp', python: 'py', java: 'java', csharp: 'cs' };
+
+const escapeHtml = (text) =>
+    String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+function showToast(message) {
+    const toast = $('#toast');
+    toast.textContent = message;
+    toast.classList.add('on');
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(() => toast.classList.remove('on'), 2000);
+}
+
+/* ============ 2. Прогресс ============ */
+
+function loadProgress() {
+    try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    } catch {
+        return {}; // испорченные данные не должны ломать сайт
+    }
+}
+
+function saveProgress() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.progress));
+    } catch {
+        showToast('Не удалось сохранить: память браузера недоступна');
+    }
+}
+
+const entryFor = (id) => (state.progress[id] ??= {});
+const isSolved = (id) => Boolean(state.progress[id]?.solved);
+
+function setSolved(id, solved) {
+    entryFor(id).solved = solved;
+    saveProgress();
+    refreshProgress();
+}
+
+function exportProgress() {
+    const blob = new Blob([JSON.stringify(state.progress, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'olprog-progress.json';
+    link.click();
+    URL.revokeObjectURL(link.href);
+}
+
+async function importProgress(file) {
+    try {
+        const data = JSON.parse(await file.text());
+        if (typeof data !== 'object' || data === null || Array.isArray(data)) throw new Error('format');
+        if (!confirm('Заменить текущий прогресс и решения данными из файла?')) return;
+        state.progress = data;
+        saveProgress();
+        refreshProgress();
+        showToast('Прогресс загружен');
+    } catch {
+        showToast('Не удалось прочитать файл прогресса');
+    }
+}
+
+/* Обновляет отметки «решено», счётчики и полоски во всех списках сразу. */
+function refreshProgress() {
+    document.querySelectorAll('[data-id]').forEach((el) => {
+        el.classList.toggle('done', isSolved(el.dataset.id));
+    });
+
+    for (const topic of state.topics) {
+        const solved = topic.problems.filter((p) => isSolved(p.id)).length;
+        const percent = topic.problems.length ? (solved / topic.problems.length) * 100 : 0;
+        document.querySelectorAll(`[data-count="${topic.id}"]`).forEach((el) => {
+            el.textContent = `${solved}/${topic.problems.length}`;
+        });
+        document.querySelectorAll(`[data-meter="${topic.id}"]`).forEach((el) => {
+            el.style.setProperty('--p', `${percent}%`);
+        });
+    }
+
+    const total = state.order.length;
+    const solvedTotal = state.order.filter(isSolved).length;
+    $('#stat').textContent = `Решено ${solvedTotal} из ${total}.`;
+}
+
+/* ============ 3. Каталог задач и списки ============ */
+
+async function loadCatalog() {
+    const response = await fetch('problems/index.json');
+    if (!response.ok) throw new Error(`index.json: ${response.status}`);
+    state.topics = await response.json();
+
+    for (const topic of state.topics) {
+        for (const problem of topic.problems) {
+            state.problems[problem.id] = { ...problem, topic: topic.id, topicTitle: topic.title };
+            state.order.push(problem.id);
+        }
+    }
+}
+
+// Боковая панель строится один раз. Дальше меняются только классы,
+// поэтому она быстро работает и на сотнях задач.
+function renderSidebar() {
+    $('#nav').innerHTML = state.topics.map((topic) => `
+    <details data-topic="${topic.id}">
+      <summary>${escapeHtml(topic.title)} <small data-count="${topic.id}"></small></summary>
+      <div class="meter" data-meter="${topic.id}"></div>
+      ${topic.problems.map((p) => `
+        <a class="it" href="#/${p.id}" data-id="${p.id}"><i>${p.id}</i>${escapeHtml(p.titleRu)}</a>`).join('')}
+    </details>`).join('');
+}
+
+function markActiveInSidebar(id) {
+    document.querySelectorAll('#nav a.it.on').forEach((el) => el.classList.remove('on'));
+    const link = $(`#nav a.it[data-id="${id}"]`);
+    if (!link) return;
+    link.classList.add('on');
+    link.closest('details').open = true;                // раскрываем тему текущей задачи
+    link.scrollIntoView({ block: 'nearest' });
+}
+
+// Главная: темы свёрнуты. При поиске, или если тема одна, раскрываются сами.
+function renderHome(query = '') {
+    const needle = query.trim().toLowerCase();
+    let html = '';
+
+    for (const topic of state.topics) {
+        const matches = topic.problems.filter((p) =>
+            !needle || `${p.titleRu} ${p.title} ${p.id}`.toLowerCase().includes(needle));
+        if (!matches.length) continue;
+
+        const open = needle || state.topics.length === 1 ? 'open' : '';
+        html += `
+      <details class="topic" ${open}>
+        <summary>${escapeHtml(topic.title)} <small data-count="${topic.id}"></small></summary>
+        <div class="meter" data-meter="${topic.id}"></div>
+        ${matches.map((p) => `
+          <a class="row" href="#/${p.id}" data-id="${p.id}"><i>${p.id}</i><span>${escapeHtml(p.titleRu)}</span></a>`).join('')}
+      </details>`;
+    }
+
+    $('#list').innerHTML = html ||
+        '<p class="lead">Ничего не найдено. Попробуйте номер задачи или английское название.</p>';
+    refreshProgress();
+}
+
+/* ============ 4. Страница задачи ============ */
+
+// Прячем формулы от markdown-парсера (иначе он портит `_` и `\`), потом возвращаем.
+function markdownToHtml(source) {
+    const formulas = [];
+    const protectedText = source.replace(/\$\$[\s\S]+?\$\$|\$[^$\n]+?\$/g, (formula) => {
+        formulas.push(formula);
+        return `@@F${formulas.length - 1}@@`;
+    });
+    return marked.parse(protectedText).replace(/@@F(\d+)@@/g, (_, i) =>
+        formulas[i].replace(/&/g, '&amp;').replace(/</g, '&lt;'));
+}
+
+function renderMath(element) {
+    if (window.renderMathInElement) {
+        renderMathInElement(element, {
+            delimiters: [
+                { left: '$$', right: '$$', display: true },
+                { left: '$', right: '$', display: false },
+            ],
+            throwOnError: false,
+        });
+    } else {
+        addEventListener('load', () => renderMath(element), { once: true }); // KaTeX ещё грузится
+    }
+}
+
+async function fetchStatement(problem) {
+    try {
+        const response = await fetch(`problems/${problem.topic}/${problem.id}.md`);
+        if (!response.ok) throw new Error(response.status);
+        const text = await response.text();
+        return text.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, ''); // убираем front matter
+    } catch {
+        return `*Не удалось загрузить условие. Проверьте файл \`problems/${problem.topic}/${problem.id}.md\`.*`;
+    }
+}
+
+function setPagerLink(element, target, label) {
+    element.classList.toggle('off', !target);
+    if (!target) return;
+    element.href = `#/${target.id}`;
+    element.innerHTML = `<small>${label}</small>${escapeHtml(target.titleRu)}`;
+}
+
+async function showProblem(problem) {
+    document.title = `${problem.titleRu} — OlProg Prep`;
+    window.scrollTo(0, 0);
+
+    $('#topic').textContent = problem.topicTitle;
+    $('#ptitle').textContent = problem.titleRu;
+    $('#pid').textContent = `CSES #${problem.id} · ${problem.title}`;
+    $('#orig').href = `https://cses.fi/problemset/task/${problem.id}`;
+    $('#send').href = `https://cses.fi/problemset/submit/${problem.id}/`;
+    $('#solved').checked = isSolved(problem.id);
+
+    const position = state.order.indexOf(problem.id);
+    setPagerLink($('#prev'), state.problems[state.order[position - 1]], '← Предыдущая');
+    setPagerLink($('#next'), state.problems[state.order[position + 1]], 'Следующая →');
+
+    loadCode();
+
+    $('#md').innerHTML = '<p class="lead">Загрузка…</p>';
+    const text = await fetchStatement(problem);
+    if (state.current !== problem) return;               // пользователь уже ушёл на другую задачу
+    $('#md').innerHTML = markdownToHtml(text);
+    renderMath($('#md'));
+}
+
+function route() {
+    document.body.classList.remove('open');
+    const id = location.hash.replace(/^#\/?/, '');
+    const problem = state.problems[id] || null;
+
+    state.current = problem;
+    $('#home').hidden = Boolean(problem);
+    $('#prob').hidden = !problem;
+    markActiveInSidebar(id);
+
+    if (problem) {
+        showProblem(problem);
+    } else {
+        document.title = 'OlProg Prep';
+        renderHome($('#q').value);
+    }
+}
+
+/* ============ 5. Редактор ============ */
+
+// Подсветка: прозрачный <textarea> лежит поверх <pre> с раскрашенной копией кода.
+const KEYWORDS = {
+    cpp: 'auto bool break case char class const constexpr continue default do double else enum float for if inline int long namespace new operator private public return short signed sizeof static struct switch template this typedef typename unsigned using void while true false nullptr vector string pair map set cin cout endl size_t',
+    python: 'and as assert break class continue def del elif else except False finally for from global if import in is lambda None nonlocal not or pass raise return True try while with yield print input range len',
+    java: 'abstract boolean break byte case catch char class const continue default do double else enum extends final finally float for if implements import instanceof int interface long new package private protected public return short static super switch this throw throws try void while true false null String',
+    csharp: 'abstract bool break byte case catch char class const continue decimal default do double else enum false finally float for foreach if in int interface internal is long namespace new null object private protected public return static string struct switch this throw true try using var void while',
+};
+
+// Части регулярки. Порядок важен: комментарий, строка, число, слово.
+const TOKEN_PARTS = {
+    cLike: {
+        comment: /\/\/.*|\/\*[\s\S]*?\*\/|^[ \t]*#.*/, // //..., /*...*/, строки #include
+        string: /"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'/,
+    },
+    python: {
+        comment: /#.*/,
+        string: /"""[\s\S]*?"""|'''[\s\S]*?'''|"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'/,
+    },
+};
+
+const NUMBER = /\b\d[\d.]*\b/;
+const WORD = /[A-Za-z_]\w*/;
+
+// Группы в результате: 1 комментарий, 2 строка, 3 число, 4 слово, 5 «(» после слова.
+function buildTokenizer({ comment, string }) {
+    return new RegExp(
+        `(${comment.source})|(${string.source})|(${NUMBER.source})|(${WORD.source})(\\s*\\()?`, 'gm');
+}
+
+const TOKENIZERS = {
+    cLike: buildTokenizer(TOKEN_PARTS.cLike),
+    python: buildTokenizer(TOKEN_PARTS.python),
+};
+
+function highlightCode() {
+    const language = state.language;
+    const keywords = new Set(KEYWORDS[language].split(' '));
+    const tokenizer = TOKENIZERS[language === 'python' ? 'python' : 'cLike'];
+
+    const html = escapeHtml($('#code').value).replace(tokenizer,
+        (match, comment, string, number, word, paren) => {
+            if (comment) return `<span class="c">${match}</span>`;
+            if (string) return `<span class="s">${match}</span>`;
+            if (number) return `<span class="n">${match}</span>`;
+            if (keywords.has(word)) return `<span class="k">${word}</span>${paren || ''}`;
+            if (paren) return `<span class="f">${word}</span>${paren}`;   // вызов функции
+            return match;
+        });
+
+    $('#hl code').innerHTML = html + '\n'; // перевод строки в конце держит высоту слоёв равной
+}
+
+function loadCode() {
+    const saved = state.progress[state.current.id]?.code?.[state.language];
+    $('#code').value = saved ?? TEMPLATES[state.language];
+    highlightCode();
+}
+
+function saveCode() {
+    if (!state.current) return;
+    const entry = entryFor(state.current.id);
+    const code = $('#code').value;
+    entry.code ??= {};
+
+    if (code === TEMPLATES[state.language]) delete entry.code[state.language]; // шаблон не храним
+    else entry.code[state.language] = code;
+    saveProgress();
+}
+
+function changeLanguage(next) {
+    saveCode();                                          // сначала сохраняем код прежнего языка
+    state.language = next;
+    localStorage.setItem(LANGUAGE_KEY, next);
+    loadCode();
+}
+
+async function copyCode() {
+    try {
+        await navigator.clipboard.writeText($('#code').value);
+        showToast('Код скопирован');
+    } catch {
+        $('#code').select();
+        showToast('Выделено: скопируйте вручную');
+    }
+}
+
+function downloadCode() {
+    const name = state.language === 'java' ? 'Main' : `solution_${state.current.id}`;
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([$('#code').value]));
+    link.download = `${name}.${FILE_EXTENSIONS[state.language]}`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+}
+
+function insertTab(editor) {
+    editor.setRangeText('    ', editor.selectionStart, editor.selectionEnd, 'end');
+    editor.dispatchEvent(new Event('input'));            // чтобы обновились подсветка и сохранение
+}
+
+/* ============ 6. События и запуск ============ */
+
+function bindEvents() {
+    addEventListener('hashchange', route);
+    $('#menu').addEventListener('click', () => document.body.classList.toggle('open'));
+    $('#q').addEventListener('input', (e) => renderHome(e.target.value));
+
+    $('#export').addEventListener('click', exportProgress);
+    $('#import').addEventListener('click', () => $('#import-file').click());
+    $('#import-file').addEventListener('change', (e) => {
+        if (e.target.files[0]) importProgress(e.target.files[0]);
+        e.target.value = '';
+    });
+
+    $('#solved').addEventListener('change', (e) => setSolved(state.current.id, e.target.checked));
+
+    // Редактор
+    const editor = $('#code');
+    let saveTimer;
+    editor.addEventListener('input', () => {
+        highlightCode();
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(saveCode, 500);
+    });
+    editor.addEventListener('scroll', () => {
+        $('#hl').scrollTop = editor.scrollTop;
+        $('#hl').scrollLeft = editor.scrollLeft;
+    });
+    editor.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') { e.preventDefault(); insertTab(editor); }
+    });
+
+    $('#lang').value = state.language;
+    $('#lang').addEventListener('change', (e) => changeLanguage(e.target.value));
+    $('#copy').addEventListener('click', copyCode);
+    $('#dl').addEventListener('click', downloadCode);
+    $('#reset').addEventListener('click', () => {
+        if (!confirm('Заменить код шаблоном для этого языка?')) return;
+        editor.value = TEMPLATES[state.language];
+        saveCode();
+        highlightCode();
+    });
+
+    // «Отправить на CSES»: ссылка открывается сама, мы копируем код и ждём возвращения.
+    $('#send').addEventListener('click', () => {
+        saveCode();
+        copyCode();
+        state.sentToCses = true;
+    });
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState !== 'visible' || !state.sentToCses || !state.current) return;
+        state.sentToCses = false;
+        setTimeout(() => {
+            if (confirm('Решение принято на CSES?')) {
+                $('#solved').checked = true;
+                setSolved(state.current.id, true);
+            }
+        }, 300);
+    });
+}
+
+async function init() {
+    state.progress = loadProgress();
+    try {
+        await loadCatalog();
+    } catch (error) {
+        console.error(error);
+        $('#list').innerHTML = '<p class="lead">Не удалось загрузить problems/index.json. ' +
+            'При открытии файла двойным щелчком браузер блокирует загрузку: запустите «python -m http.server».</p>';
+        return;
+    }
+
+    renderSidebar();
+    bindEvents();
+    route();
+
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+        navigator.serviceWorker.register('sw.js');
+    }
+}
+
+init();
