@@ -26,9 +26,26 @@
 </nav>
 
 <main>
+    <!-- Огонёк: сколько задач решено сегодня -->
+    <div id="streak" class="streak" data-level="0" aria-live="polite">
+        <svg class="flame" viewBox="0 0 24 32" aria-hidden="true">
+            <path class="f-out" d="M12 1C14 8 21 12 21 21a9 9 0 0 1-18 0C3 14 9 11 12 1z"/>
+            <path class="f-mid" d="M12 10C13.5 15 18 17 18 23a6 6 0 0 1-12 0C6 18 10 16 12 10z"/>
+            <path class="f-in" d="M12 17C13 20 15 21 15 24.5a3 3 0 0 1-6 0C9 21.5 11 20 12 17z"/>
+            <circle class="spark s1" cx="7" cy="8" r="1"/>
+            <circle class="spark s2" cx="17" cy="6" r="1"/>
+            <circle class="spark s3" cx="12" cy="3" r="0.8"/>
+        </svg>
+        <div class="streak-text">
+            <b id="streak-count"></b>
+            <span id="streak-phrase"></span>
+        </div>
+        <canvas id="zap" aria-hidden="true"></canvas>
+    </div>
+
     <!-- Главная: список тем -->
     <section id="home">
-        <h1>Задачи CSES.fi на русском языке</h1>
+        <h1>Задачи CSES на русском</h1>
         <p class="lead">Читайте условие, пишите код здесь, отправляйте на CSES. <span id="stat"></span></p>
         <input id="q" type="search" placeholder="Поиск по названию или номеру">
         <div id="list"></div>
@@ -77,10 +94,7 @@
     <footer>
         Условия задач принадлежат <a href="https://cses.fi" target="_blank" rel="noopener">CSES Problem Set</a> (Antti Laaksonen).
         Перевод сделан в образовательных целях, проект некоммерческий.
-        The problem statements belong to the <a href="https://cses.fi" target="_blank" rel="noopener">CSES Problem Set</a> (Antti Laaksonen).
-        This translation is provided for educational purposes; the project is non-commercial.
     </footer>
-
 </main>
 
 <div id="toast" role="status"></div>
