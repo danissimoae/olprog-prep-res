@@ -3,122 +3,122 @@
         "id": "introductory",
         "title": "Вводные задачи",
         "problems": [
-            {
-                "id": "1068",
-                "title": "Weird Algorithm",
-                "titleRu": "Странный алгоритм"
-            },
-            {
-                "id": "1083",
-                "title": "Missing Number",
-                "titleRu": "Пропущенное число"
-            },
-            {
-                "id": "1069",
-                "title": "Repetitions",
-                "titleRu": "Повторения"
-            }
+            {"id": "1068", "title": "Weird Algorithm", "titleRu": "Странный алгоритм"},
+            {"id": "1083", "title": "Missing Number", "titleRu": "Пропущенное число"},
+            {"id": "1069", "title": "Repetitions", "titleRu": "Повторения"},
+            {"id": "1094", "title": "Increasing Array", "titleRu": "Возрастающий массив"},
+            {"id": "1070", "title": "Permutations", "titleRu": "Перестановки"},
+            {"id": "1071", "title": "Number Spiral", "titleRu": "Числовая спираль"},
+            {"id": "1072", "title": "Two Knights", "titleRu": "Два коня"},
+            {"id": "1092", "title": "Two Sets", "titleRu": "Два множества"},
+            {"id": "1617", "title": "Bit Strings", "titleRu": "Битовые строки"},
+            {"id": "1618", "title": "Trailing Zeros", "titleRu": "Конечные нули"},
+            {"id": "1754", "title": "Coin Piles", "titleRu": "Кучи монет"},
+            {"id": "1755", "title": "Palindrome Reorder", "titleRu": "Перестановка в палиндром"},
+            {"id": "2205", "title": "Gray Code", "titleRu": "Код Грея"},
+            {"id": "2165", "title": "Tower of Hanoi", "titleRu": "Ханойская башня"},
+            {"id": "1622", "title": "Creating Strings", "titleRu": "Создание строк"},
+            {"id": "1623", "title": "Apple Division", "titleRu": "Деление яблок"},
+            {"id": "1624", "title": "Chessboard and Queens", "titleRu": "Доска и ферзи"},
+            {"id": "3399", "title": "Raab Game I", "titleRu": "Игра Рааб I"},
+            {"id": "3419", "title": "Mex Grid Construction", "titleRu": "Построение Mex-сетки"},
+            {"id": "3217", "title": "Knight Moves Grid", "titleRu": "Ходы коня по сетке"},
+            {"id": "3311", "title": "Grid Coloring I", "titleRu": "Раскраска сетки I"},
+            {"id": "2431", "title": "Digit Queries", "titleRu": "Запросы цифр"},
+            {"id": "1743", "title": "String Reorder", "titleRu": "Перестановка строки"},
+            {"id": "1625", "title": "Grid Path Description", "titleRu": "Описание пути по сетке"}
         ]
     },
     {
         "id": "sorting",
         "title": "Сортировка и поиск",
         "problems": [
-            {
-                "id": "1621",
-                "title": "Distinct Numbers",
-                "titleRu": "Различные числа"
-            },
-            {
-                "id": "1084",
-                "title": "Apartments",
-                "titleRu": "Квартиры"
-            },
-            {
-                "id": "1090",
-                "title": "Ferris Wheel",
-                "titleRu": "Колесо обозрения"
-            },
-            {
-                "id": "1091",
-                "title": "Concert Tickets",
-                "titleRu": "Билеты на концерт"
-            },
-            {
-                "id": "1619",
-                "title": "Restaurant Customers",
-                "titleRu": "Клиенты ресторана"
-            },
-            {
-                "id": "1629",
-                "title": "Movie Festival",
-                "titleRu": "Кинофестиваль"
-            },
-            {
-                "id": "1640",
-                "title": "Sum of Two Values",
-                "titleRu": "Сумма двух значений"
-            },
-            {
-                "id": "1643",
-                "title": "Maximum Subarray Sum",
-                "titleRu": "Максимальная сумма подмассива"
-            },
-            {
-                "id": "1074",
-                "title": "Stick Lengths",
-                "titleRu": "Длины палочек"
-            },
-            {
-                "id": "2183",
-                "title": "Missing Coin Sum",
-                "titleRu": "Пропущенная сумма монет"
-            },
-            {
-                "id": "2216",
-                "title": "Collecting Numbers",
-                "titleRu": "Сбор чисел"
-            },
-            {
-                "id": "1141",
-                "title": "Playlist",
-                "titleRu": "Плейлист"
-            },
-            {
-                "id": "1630",
-                "title": "Tasks and Deadlines",
-                "titleRu": "Задачи и дедлайны"
-            },
-            {
-                "id": "1631",
-                "title": "Reading Books",
-                "titleRu": "Чтение книг"
-            },
-            {
-                "id": "1641",
-                "title": "Sum of Three Values",
-                "titleRu": "Сумма трёх значений"
-            },
-            {
-                "id": "1642",
-                "title": "Sum of Four Values",
-                "titleRu": "Сумма четырёх значений"
-            },
-            {
-                "id": "1632",
-                "title": "Movie Festival II",
-                "titleRu": "Кинофестиваль II"
-            },
-            {
-                "id": "1661",
-                "title": "Subarray Sums I",
-                "titleRu": "Суммы подмассивов I"
-            },
-            {
-                "id": "1662",
-                "title": "Subarray Divisibility",
-                "titleRu": "Делимость подмассивов"
-            }
+            {"id": "1621", "title": "Distinct Numbers", "titleRu": "Различные числа"},
+            {"id": "1084", "title": "Apartments", "titleRu": "Квартиры"},
+            {"id": "1090", "title": "Ferris Wheel", "titleRu": "Колесо обозрения"},
+            {"id": "1091", "title": "Concert Tickets", "titleRu": "Билеты на концерт"},
+            {"id": "1619", "title": "Restaurant Customers", "titleRu": "Клиенты ресторана"},
+            {"id": "1629", "title": "Movie Festival", "titleRu": "Кинофестиваль"},
+            {"id": "1640", "title": "Sum of Two Values", "titleRu": "Сумма двух значений"},
+            {"id": "1643", "title": "Maximum Subarray Sum", "titleRu": "Максимальная сумма подмассива"},
+            {"id": "1074", "title": "Stick Lengths", "titleRu": "Длины палочек"},
+            {"id": "2183", "title": "Missing Coin Sum", "titleRu": "Пропущенная сумма монет"},
+            {"id": "2216", "title": "Collecting Numbers", "titleRu": "Сбор чисел"},
+            {"id": "2217", "title": "Collecting Numbers II", "titleRu": "Сбор чисел II"},
+            {"id": "1141", "title": "Playlist", "titleRu": "Плейлист"},
+            {"id": "1073", "title": "Towers", "titleRu": "Башни"},
+            {"id": "1163", "title": "Traffic Lights", "titleRu": "Светофоры"},
+            {"id": "3420", "title": "Distinct Values Subarrays", "titleRu": "Подмассивы с различными значениями"},
+            {"id": "3421", "title": "Distinct Values Subsequences", "titleRu": "Подпоследовательности с различными значениями"},
+            {"id": "2162", "title": "Josephus Problem I", "titleRu": "Задача Иосифа I"},
+            {"id": "2163", "title": "Josephus Problem II", "titleRu": "Задача Иосифа II"},
+            {"id": "2168", "title": "Nested Ranges Check", "titleRu": "Проверка вложенных диапазонов"},
+            {"id": "2169", "title": "Nested Ranges Count", "titleRu": "Подсчёт вложенных диапазонов"},
+            {"id": "1164", "title": "Room Allocation", "titleRu": "Распределение комнат"},
+            {"id": "1620", "title": "Factory Machines", "titleRu": "Станки на фабрике"},
+            {"id": "1630", "title": "Tasks and Deadlines", "titleRu": "Задачи и дедлайны"},
+            {"id": "1631", "title": "Reading Books", "titleRu": "Чтение книг"},
+            {"id": "1641", "title": "Sum of Three Values", "titleRu": "Сумма трёх значений"},
+            {"id": "1642", "title": "Sum of Four Values", "titleRu": "Сумма четырёх значений"},
+            {"id": "1645", "title": "Nearest Smaller Values", "titleRu": "Ближайшие меньшие значения"},
+            {"id": "1660", "title": "Subarray Sums I", "titleRu": "Суммы подмассивов I"},
+            {"id": "1661", "title": "Subarray Sums II", "titleRu": "Суммы подмассивов II"},
+            {"id": "1662", "title": "Subarray Divisibility", "titleRu": "Делимость подмассивов"},
+            {"id": "2428", "title": "Distinct Values Subarrays II", "titleRu": "Подмассивы с различными значениями II"},
+            {"id": "1085", "title": "Array Division", "titleRu": "Деление массива"},
+            {"id": "1632", "title": "Movie Festival II", "titleRu": "Кинофестиваль II"},
+            {"id": "1644", "title": "Maximum Subarray Sum II", "titleRu": "Максимальная сумма подмассива II"}
+        ]
+    },
+    {
+        "id": "dynamic",
+        "title": "Динамическое программирование",
+        "problems": [
+            {"id": "1633", "title": "Dice Combinations", "titleRu": "Комбинации кубика"},
+            {"id": "1634", "title": "Minimizing Coins", "titleRu": "Минимизация монет"}
+        ]
+    },
+    {
+        "id": "math",
+        "title": "Математика",
+        "problems": [
+            {"id": "2164", "title": "Josephus Queries", "titleRu": "Запросы Иосифа"},
+            {"id": "1095", "title": "Exponentiation", "titleRu": "Возведение в степень"},
+            {"id": "1712", "title": "Exponentiation II", "titleRu": "Возведение в степень II"},
+            {"id": "1713", "title": "Counting Divisors", "titleRu": "Подсчёт делителей"},
+            {"id": "1081", "title": "Common Divisors", "titleRu": "Общие делители"},
+            {"id": "1082", "title": "Sum of Divisors", "titleRu": "Сумма делителей"},
+            {"id": "2182", "title": "Divisor Analysis", "titleRu": "Анализ делителей"},
+            {"id": "2185", "title": "Prime Multiples", "titleRu": "Простые кратные"},
+            {"id": "2417", "title": "Counting Coprime Pairs", "titleRu": "Подсчёт взаимно простых пар"},
+            {"id": "3396", "title": "Next Prime", "titleRu": "Следующее простое"},
+            {"id": "1079", "title": "Binomial Coefficients", "titleRu": "Биномиальные коэффициенты"},
+            {"id": "1715", "title": "Creating Strings II", "titleRu": "Создание строк II"},
+            {"id": "1716", "title": "Distributing Apples", "titleRu": "Раздача яблок"},
+            {"id": "1717", "title": "Christmas Party", "titleRu": "Рождественская вечеринка"},
+            {"id": "3397", "title": "Permutation Order", "titleRu": "Порядок перестановки"},
+            {"id": "3398", "title": "Permutation Rounds", "titleRu": "Раунды перестановки"},
+            {"id": "2064", "title": "Bracket Sequences I", "titleRu": "Скобочные последовательности I"},
+            {"id": "2187", "title": "Bracket Sequences II", "titleRu": "Скобочные последовательности II"},
+            {"id": "2209", "title": "Counting Necklaces", "titleRu": "Подсчёт ожерелий"},
+            {"id": "2210", "title": "Counting Grids", "titleRu": "Подсчёт сеток"},
+            {"id": "1722", "title": "Fibonacci Numbers", "titleRu": "Числа Фибоначчи"},
+            {"id": "1096", "title": "Throwing Dice", "titleRu": "Бросание кубиков"},
+            {"id": "1723", "title": "Graph Paths I", "titleRu": "Пути в графе I"},
+            {"id": "1724", "title": "Graph Paths II", "titleRu": "Пути в графе II"},
+            {"id": "3154", "title": "System of Linear Equations", "titleRu": "Система линейных уравнений"},
+            {"id": "3355", "title": "Sum of Four Squares", "titleRu": "Сумма четырёх квадратов"},
+            {"id": "3406", "title": "Triangle Number Sums", "titleRu": "Суммы треугольных чисел"},
+            {"id": "1725", "title": "Dice Probability", "titleRu": "Вероятность кубиков"},
+            {"id": "1726", "title": "Moving Robots", "titleRu": "Движущиеся роботы"},
+            {"id": "1727", "title": "Candy Lottery", "titleRu": "Конфетная лотерея"},
+            {"id": "1728", "title": "Inversion Probability", "titleRu": "Вероятность инверсии"},
+            {"id": "1729", "title": "Stick Game", "titleRu": "Игра с палочками"},
+            {"id": "1730", "title": "Nim Game I", "titleRu": "Игра Ним I"},
+            {"id": "1098", "title": "Nim Game II", "titleRu": "Игра Ним II"},
+            {"id": "1099", "title": "Stair Game", "titleRu": "Игра на лестнице"},
+            {"id": "2207", "title": "Grundy's Game", "titleRu": "Игра Гранди"},
+            {"id": "2208", "title": "Another Game", "titleRu": "Ещё одна игра"}
         ]
     }
 ]
